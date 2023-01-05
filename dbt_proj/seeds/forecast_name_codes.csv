@@ -1,0 +1,20 @@
+code,name
+msl, Air pressure
+t, Air temperature
+vis, Horizontal visibility
+wd, Wind direction
+ws, Wind speed
+r, Relative humidity
+tstm, Thunder probability
+tcc_mean, Mean value of total cloud cover
+lcc_mean, Mean value of low level cloud cover
+mcc_mean, Mean value of medium level cloud cover
+hcc_mean, Mean value of high level
+gust, Wind gust speed
+pmin, Minimum precipitation intensity
+pmax, Maximum precipitation intensity
+spp, Percent of precipitation in frozen form
+pcat, Precipitation category
+pmean, Mean precipitation intensity
+pmedian, Median precipitation intensity
+Wsymb2, Weather symbol

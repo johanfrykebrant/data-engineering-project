@@ -1,0 +1,55 @@
+version: '2'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "${ZOOKEEPER_PORT}:2181"
+    restart: unless-stopped
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "${KAFKA_PORT}:9092"
+    environment:
+      DOCKER_API_VERSION: 1.22
+      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_IP}
+      KAFKA_CREATE_TOPICS: "db-ingestion:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:${ZOOKEEPER_PORT}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+      POSTGRES_DB: ${DATABASE}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+  
+  consumer:
+    build: 
+      context: ./
+      dockerfile: consumer/consumer.Dockerfile
+    depends_on:
+      - "kafka"
+      - "zookeeper"
+      - "postgres"
+    restart: unless-stopped
+    
+  producer:
+    build: 
+      context: ./
+      dockerfile: producer/producer.Dockerfile
+    depends_on:
+      - "kafka"
+      - "zookeeper"
+    restart: unless-stopped
+
+volumes:
+  postgres-db-volume: 
