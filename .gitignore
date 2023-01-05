@@ -1,6 +1,7 @@
 **/profiles.yml
 **/test*
 **/.env
-.gitignore
 .vscode
 **/__pycache__
+**/.user.yml
+**/*log
