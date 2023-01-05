@@ -1,0 +1,5 @@
+**/profiles.yml
+**/test*
+**/.env
+.gitignore
+.vscode
