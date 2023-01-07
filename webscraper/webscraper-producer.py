@@ -1,10 +1,11 @@
-from flask import Flask
-from flask_restful import Api
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import Select
 import time
-import pandas as pd
 import json
+import os
+from dotenv import load_dotenv
+from kafka import KafkaProducer
 
 def get_energy_prices():
     # Setting up webdriver
@@ -16,7 +17,7 @@ def get_energy_prices():
     # options.add_argument('--disable-dev-shm-usage') # Not used 
    
     url = "https://www.nordpoolgroup.com/en/Market-data1/Dayahead/Area-Prices/SE/Hourly/?view=table"
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
     driver.get(url)
 
     # Wait to aviod buggy response
@@ -59,32 +60,62 @@ def get_energy_prices():
         se2.append(float(values[2].replace(",",".")))
         se3.append(float(values[3].replace(",",".")))
         se4.append(float(values[4].replace(",",".")))
+    
+    result_dict = {
+                'destination_schema': 'staging',
+                'destination_table': 'energy_prices',
+                'data': []
+    }
 
-    # create dataframe
-    data = {'SE1' :  se1,
-            'SE2' :  se2,
-            'SE3' :  se3,
-            'SE4' :  se4}
-    df = pd.DataFrame(data, columns=col_names[1:], index=timestamps)
+    data_list = []
+    for i in range(len(timestamps)):
+        temp_dict ={ 
+        "price_timestamp":  timestamps[i],
+        "price":  se1[i],
+        "bidding_zone":  'se1',
+        "unit" : 'Sek/kWh',
+        }
+        data_list.append(temp_dict)
+        temp_dict ={ 
+        "price_timestamp":  timestamps[i],
+        "price":  se2[i],
+        "bidding_zone":  'se2',
+        "unit" : 'Sek/kWh',
+        }
+        data_list.append(temp_dict)
+        temp_dict ={ 
+        "price_timestamp":  timestamps[i],
+        "price":  se3[i],
+        "bidding_zone":  'se3',
+        "unit" : 'Sek/kWh',
+        }
+        data_list.append(temp_dict)
+        temp_dict ={ 
+        "price_timestamp":  timestamps[i],
+        "price":  se4[i],
+        "bidding_zone":  'se4',
+        "unit" : 'Sek/kWh',
+        }
+        data_list.append(temp_dict)
 
-    # turn the df into a json object
-    data_json = df.to_json(orient="table")
-    parsed = json.loads(data_json)
-    result = json.dumps(parsed, indent=4)
+    result_dict['data'] = data_list
 
-    # quiting driver
     driver.quit()
 
-    return result
+    return result_dict
 
-
-app = Flask(__name__)
-api = Api(app)
-
-
-@app.route('/day_ahead', methods=['GET'])
-def get():
-    return get_energy_prices()
+def main():
+  load_dotenv()
+  # create produer
+  producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
+  # get forecast data
+  print('fetching forecasts...')
+  msg = get_energy_prices()
+  # encode forecast data to byte array
+  msg_byte = json.dumps(msg).encode('utf-8')
+  # send message to kafka topic
+  print('send forecasts to db-ingestion topic...')
+  producer.send('db-ingestion', msg_byte)
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0', port=9007)
+    main()

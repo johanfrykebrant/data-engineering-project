@@ -31,4 +31,7 @@ dbt_proj:
 
   target: dev
 ´´´
+
+dbt run --profiles-dir /home/paddan/source/data-engineering-project/dbt_proj
+
   

@@ -21,7 +21,7 @@ CREATE TABLE energy_prices (
     price_timestamp TIMESTAMP,
     price REAL,
     bidding_zone TEXT,
-    currency TEXT
+    unit TEXT
     )
 
 ;
