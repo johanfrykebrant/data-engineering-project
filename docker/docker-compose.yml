@@ -6,19 +6,13 @@ services:
     image: zookeeper:latest
     ports:
       - "${ZOOKEEPER_PORT}:2181"
-#    volumes:
-#      - "zookeeper_data:/bitnami"
+    #volumes:
+    #- "zookeeper_data:/bitnami"
     # environment:
     #   - ALLOW_ANONYMOUS_LOGIN=yes
     restart: unless-stopped
 
-#volumes:
-#  zookeeper_data:
-#    driver: local
-#  kafka_data:
-#    driver: local
-
- kafka:
+  kafka:
     image: wurstmeister/kafka
     ports:
       - "${KAFKA_PORT}:9092"
