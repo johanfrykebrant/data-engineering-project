@@ -6,10 +6,6 @@ services:
     image: zookeeper:latest
     ports:
       - "${ZOOKEEPER_PORT}:2181"
-    #volumes:
-    #- "zookeeper_data:/bitnami"
-    # environment:
-    #   - ALLOW_ANONYMOUS_LOGIN=yes
     restart: unless-stopped
 
   kafka:
@@ -29,9 +25,9 @@ services:
   postgres:
     image: postgres
     environment:
-      POSTGRES_USER: ${USER}
-      POSTGRES_PASSWORD: ${PASSWORD}
-      POSTGRES_DB: ${DATABASE}
+      POSTGRES_USER: "${DBUSER}"
+      POSTGRES_PASSWORD: "${PASSWORD}"
+      POSTGRES_DB: "${DATABASE}"
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
