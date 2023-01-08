@@ -6,7 +6,7 @@ CREATE TABLE observations (
     observation_value               REAL,
     observation_name                TEXT,
     observation_unit                TEXT,
-    created_timestamp               TIMESTAMP NOT NULL DEFAULT NOW()
+    created_timestamp_utc           TIMESTAMP NOT NULL DEFAULT NOW()
     )
 
 CREATE TABLE forecasts (
@@ -16,7 +16,7 @@ CREATE TABLE forecasts (
     forecast_timestamp              TIMESTAMP,
     forecast_value                  REAL,
     forecast_unit                   TEXT,
-    created_timestamp               TIMESTAMP NOT NULL DEFAULT NOW()
+    created_timestamp_utc           TIMESTAMP NOT NULL DEFAULT NOW()
 )
 
 CREATE TABLE energy_prices (
@@ -24,7 +24,7 @@ CREATE TABLE energy_prices (
     price                           REAL,
     bidding_zone                    TEXT,
     unit                            TEXT,
-    created_timestamp               TIMESTAMP NOT NULL DEFAULT NOW()
+    created_timestamp_utc           TIMESTAMP NOT NULL DEFAULT NOW()
     )
 
 ;
