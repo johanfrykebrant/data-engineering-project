@@ -109,12 +109,12 @@ def main():
   # create produer
   producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
   # get forecast data
-  print('fetching forecasts...')
+  print('fetching energy prices...')
   msg = get_energy_prices()
   # encode forecast data to byte array
   msg_byte = json.dumps(msg).encode('utf-8')
   # send message to kafka topic
-  print('send forecasts to db-ingestion topic...')
+  print('send energy prices to db-ingestion topic...')
   producer.send('db-ingestion', msg_byte)
 
 if __name__ == '__main__':
