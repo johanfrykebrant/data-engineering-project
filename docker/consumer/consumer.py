@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 def write_to_db(data):
     # connect to db
     conn = psycopg2.connect(dbname=os.getenv('DATABASE'),
-                            user=os.getenv('USER'),
+                            user=os.getenv('DBUSER'),
                             password=os.getenv('PASSWORD'),
                             host=os.getenv('POSTGRES_IP'),
                             port=os.getenv('POSTGRES_PORT'))
@@ -41,7 +41,7 @@ def main():
     load_dotenv()
     # test db connection
     conn = psycopg2.connect(dbname=os.getenv('DATABASE'),
-                            user=os.getenv('USER'),
+                            user=os.getenv('DBUSER'),
                             password=os.getenv('PASSWORD'),
                             host=os.getenv('POSTGRES_IP'),
                             port=os.getenv('POSTGRES_PORT'))
