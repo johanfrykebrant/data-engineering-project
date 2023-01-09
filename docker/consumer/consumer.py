@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 def write_to_db(data):
     # connect to db
+    print('Attempt db connect')
     conn = psycopg2.connect(dbname=os.getenv('DATABASE'),
                             user=os.getenv('DBUSER'),
                             password=os.getenv('PASSWORD'),
@@ -28,13 +29,14 @@ def write_to_db(data):
     # create sql querry string
     querry_str = "INSERT INTO {scehma}.{table} {cols} VALUES ({vals_str})".format(
                 cols = cols, vals_str = vals_str,scehma = schema, table = table).replace("'","") 
-    
+    print(querry_str)
     # execute querry
     cur.executemany(querry_str, vals_list)
 
     # commit the changes to the database
     conn.commit()
     # close communication with the database
+    print('Close connection.')
     cur.close()
 
 def main():
