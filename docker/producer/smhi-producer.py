@@ -108,11 +108,11 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
 
       approved_timestamp = date_str_format(json.dumps(jobj["approvedTime"]))
       coordinates = tuple(jobj["geometry"]["coordinates"][0])
-
-      for hrs in hours_in_future:
-        time = date_str_format(json.dumps(jobj["timeSeries"][hrs + 1]["validTime"]))
+      forecasts = jobj["timeSeries"]
+      for forecast in forecasts:
+        time = date_str_format(json.dumps(forecast["validTime"]))
         data_list = []
-        for i in jobj["timeSeries"][hrs + 1]["parameters"]:
+        for i in forecast["parameters"]:
           temp_dict ={ 
             "forecast_code" : i["name"],
             "forecast_approved_timestamp": approved_timestamp,
