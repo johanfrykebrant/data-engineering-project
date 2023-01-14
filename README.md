@@ -39,10 +39,4 @@ dbt_proj:
 
   target: dev
 ´´´
-
-dbt run --profiles-dir /home/paddan/source/data-engineering-project/dbt_proj
-
-
-
-conn = psycopg2.connect(dbname='',user='user',password='password123',host='192.168.1.101',port='5432')
   
