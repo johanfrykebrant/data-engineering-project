@@ -2,7 +2,15 @@ from kafka import KafkaConsumer
 import json
 import psycopg2
 import os
+from datetime import datetime
 from dotenv import load_dotenv
+import logging 
+
+logging.basicConfig(filename="std.log", 
+                    format='%(asctime)s | %(message)s', 
+                    filemode='w') 
+
+logger=logging.getLogger() 
 
 def write_to_db(data):
     # connect to db
@@ -40,6 +48,7 @@ def write_to_db(data):
 def main():
     load_dotenv()
     # test db connection
+    logger.debug(f"{datetime.now()} - Testing database connection")
     conn = psycopg2.connect(dbname=os.getenv('DATABASE'),
                             user=os.getenv('DBUSER'),
                             password=os.getenv('PASSWORD'),
@@ -48,20 +57,24 @@ def main():
 
     cur = conn.cursor()
     cur.close()
-
+    topic = 'db-ingestion'
+    logger.debug(f"{datetime.now()} - Subscribing to topic {topic} at {os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
+    
     # subscribe to kafka topic
-    #kafka_server = f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}"
     consumer = KafkaConsumer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}",
                                 auto_offset_reset='latest',
                                 consumer_timeout_ms=1000)
-    consumer.subscribe(['db-ingestion'])
+    consumer.subscribe([topic])
 
     while True:
         for message in consumer:
+            logger.debug(f"{datetime.now()} - Consuming message.")
             # decode bytearray to string and load string as json-obj.
             jobj = json.loads((message.value).decode("utf-8"))
             # write the 
+            logger.debug(f"{datetime.now()} - Writing to database.")
             write_to_db(jobj)
+    logger.debug(f"{datetime.now()} - Closing database connection")
     consumer.close()
 
 if __name__ == "__main__":

@@ -6,6 +6,13 @@ import json
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import logging 
+
+logging.basicConfig(filename="std.log", 
+                    format='%(asctime)s | %(message)s', 
+                    filemode='w') 
+
+logger=logging.getLogger() 
 
 NAME_CODES ={
     'msl': 'Air pressure',
@@ -48,22 +55,31 @@ def get_observations(station_number):
         return dateStr
 
     for param in parameters:
+        logger.debug(f"{datetime.now()} - Requesting observations for parameter number {param}")
         url = SMHI_OBSERVATION.replace("<parameter>",str(param))
         try:
             r = get(url)
         except (ConnectionError, NewConnectionError, gaierror, MaxRetryError):
             #logger.critical("Failed GET request. Could not establish connection. Ensure that device has internet acecss")
+            logger.debug(f"{datetime.now()} - Could not connect")
             return None
+        jobj = r.json()
+        logger.debug(f"{datetime.now()} - Received status code {r.status_code}")
+        values = jobj["value"]
         if r.status_code == 200: 
-            jobj = r.json()
-            temp_dict ={
-                'observation_name':jobj["parameter"]["name"],
-                'observation_timestamp':epoch_to_date(jobj["value"][0]['date']),
-                'observation_value':jobj["value"][0]["value"],
-                'observation_station':jobj["station"]["name"],
-                'observation_unit':jobj["parameter"]["unit"]
-            }
-            result_dict['data'].append(temp_dict)
+            logger.debug(f"{datetime.now()} - Successful response")
+            if values != None:
+              for value in values:
+                temp_dict ={
+                    'observation_name':jobj["parameter"]["name"],
+                    'observation_timestamp':epoch_to_date(value['date']),
+                    'observation_value':value["value"],
+                    'observation_station':jobj["station"]["name"],
+                    'observation_unit':jobj["parameter"]["unit"]
+                }
+                result_dict['data'].append(temp_dict)
+        else:
+          logger.debug(f"{datetime.now()} - Unsuccessful response")
     return result_dict
 
 def get_forecasts(longitude,latitude,hours_in_future = [24]):
@@ -78,7 +94,7 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
     try:
       r = get(SMHI_FORECAST)
     except (ConnectionError, NewConnectionError, gaierror, MaxRetryError):
-      #logger.critical("Failed GET request. Could not establish connection. Ensure that device has internet acecss")
+      logger.critical("Failed GET request. Could not establish connection. Ensure that device has internet acecss")
       return None
 
     result_dict = {
@@ -87,7 +103,7 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
                     'data': None
     }
     if r.status_code == 200:
-      #logger.info(f"{r.request.method} request from {r.url} returned <Response{r.status_code}>") 
+      logger.info(f"{r.request.method} request from {r.url} returned <Response{r.status_code}>") 
       jobj = r.json()
 
       approved_timestamp = date_str_format(json.dumps(jobj["approvedTime"]))
@@ -108,29 +124,32 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
           data_list.append(temp_dict)
         result_dict['data'] = data_list
     else:
-      #logger.error(f"{r.request.method} request from {r.url} returned <Response{r.status_code}>")
+      logger.error(f"{r.request.method} request from {r.url} returned <Response{r.status_code}>")
       return None
     return result_dict
 
 def main():
+  # Set the threshold of logger to DEBUG 
+  # debug, info, warning, error, critical
+  logger.setLevel(logging.DEBUG) 
   load_dotenv()
   # create produer
   producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
   # get forecast data
-  print('fetching forecasts...')
+  logger.debug(f"{datetime.now()} - Fetching forecasts...")
   msg = get_forecasts(longitude = '13.07',latitude = '55.6')
   # encode forecast data to byte array
   msg_byte = json.dumps(msg).encode('utf-8')
   # send message to kafka topic
-  print('send forecasts to db-ingestion topic...')
+  logger.debug(f"{datetime.now()} - Send forecasts to db-ingestion topic...")
   producer.send('db-ingestion', msg_byte)
   # get observation data
-  print('fetching observations...')
+  logger.debug(f"{datetime.now()} - Fetching observations...")
   msg = get_observations(52350)
   # encode observation data to byte array
   msg_byte = json.dumps(msg).encode('utf-8')
   # send message to kafka topic
-  print('send observations to db-ingestion topic...')
+  logger.debug(f"{datetime.now()} - Send observations to db-ingestion topic...")
   producer.send('db-ingestion', msg_byte)
 
   producer.close()
