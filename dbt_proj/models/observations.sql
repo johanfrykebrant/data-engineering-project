@@ -2,7 +2,7 @@
 
 SELECT name AS forecast_name,
 	forecast_timestamp,	
-	EXTRACT(epoch FROM (forecast_timestamp - forecast_approved_timestamp)/(60*60)) AS hours_diff,
+	CAST(EXTRACT(epoch FROM (forecast_timestamp - forecast_approved_timestamp)/(60*60)) AS INT) AS hours_diff,
 	forecast_value,
 	forecast_unit
 FROM staging.forecasts
