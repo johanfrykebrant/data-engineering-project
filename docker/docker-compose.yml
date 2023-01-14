@@ -52,7 +52,7 @@ services:
     depends_on:
       - "kafka"
       - "zookeeper"
-    restart: unless-stopped
+    restart: 'no'
 
 volumes:
   postgres-db-volume: 

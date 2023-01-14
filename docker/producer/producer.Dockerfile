@@ -9,10 +9,10 @@ RUN pip3 install --no-cache --upgrade pip setuptools
 COPY producer/requirements.txt ./requirements.txt
 COPY producer/smhi-producer.py ./app.py
 COPY .env ./.env
+
 # copy crontabs for root user
 COPY producer/cronjobs /etc/crontabs/root
 
-
 RUN pip3 install -r requirements.txt
-CMD ["crond", "-f", "-d", "8"]
-#CMD ["python", "./app.py"]
+CMD ["python", "./app.py"]
+#CMD ["crond", "-f", "-d", "8",]
