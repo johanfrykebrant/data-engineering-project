@@ -13,6 +13,7 @@ logging.basicConfig(filename="std.log",
                     filemode='w') 
 
 logger=logging.getLogger() 
+logger.setLevel(logging.DEBUG) 
 
 NAME_CODES ={
     'msl': 'Air pressure',
@@ -131,7 +132,6 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
 def main():
   # Set the threshold of logger to DEBUG 
   # debug, info, warning, error, critical
-  logger.setLevel(logging.DEBUG) 
   load_dotenv()
   # create produer
   producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
