@@ -45,4 +45,5 @@ dbt_proj:
   pip install python-dotenv
 
   transfer files setup cron
+  scp -r temperature-sensor pi@pi-node:/home/pi/temperature-sensor
   

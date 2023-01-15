@@ -80,6 +80,7 @@ def main():
     logger.debug(f"{datetime.now()} - Send temperature measurements to db-ingestion topic...")
     producer.send('db-ingestion', msg_byte)
     print(json.dumps(msg, indent=4))
+    producer.close()
     
 if __name__ == "__main__":
     main()
