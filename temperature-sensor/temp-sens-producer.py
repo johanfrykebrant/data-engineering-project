@@ -73,14 +73,18 @@ def read_temp():
 
 def main():
     load_dotenv()
+    # create kafka produer
     producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
+    # get temperature reading
+    logger.debug(f"{datetime.now()} - Reading from temperature sensor...")
     msg = read_temp()
+    # encode forecast data to byte array
     msg_byte = json.dumps(msg).encode('utf-8')
     # send message to kafka topic
     logger.debug(f"{datetime.now()} - Send temperature measurements to db-ingestion topic...")
     producer.send('db-ingestion', msg_byte)
-    print(json.dumps(msg, indent=4))
-    producer.close()
+    # close producer
+    producer.close()    
     
 if __name__ == "__main__":
     main()

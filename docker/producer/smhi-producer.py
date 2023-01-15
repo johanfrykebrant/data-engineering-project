@@ -130,8 +130,6 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
     return result_dict
 
 def main():
-  # Set the threshold of logger to DEBUG 
-  # debug, info, warning, error, critical
   load_dotenv()
   # create produer
   producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
@@ -151,7 +149,7 @@ def main():
   # send message to kafka topic
   logger.debug(f"{datetime.now()} - Send observations to db-ingestion topic...")
   producer.send('db-ingestion', msg_byte)
-
+  # close producer
   producer.close()
 
 if __name__ == "__main__":
