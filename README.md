@@ -39,4 +39,10 @@ dbt_proj:
 
   target: dev
 ´´´
+## Temperature sensor
+
+  pip install kafka-python
+  pip install python-dotenv
+
+  transfer files setup cron
   
