@@ -82,6 +82,7 @@ def main():
     msg_byte = json.dumps(msg).encode('utf-8')
     # send message to kafka topic
     logger.debug(f"{datetime.now()} - Send temperature measurements to db-ingestion topic...")
+    print(json.dumps(msg, indent=4))
     producer.send('db-ingestion', msg_byte)
     # close producer
     producer.close()    
