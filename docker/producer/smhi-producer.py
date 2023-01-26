@@ -89,9 +89,11 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
     See API documentation at https://opendata.smhi.se/apidocs/metfcst
     """
     SMHI_FORECAST = "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/" + longitude + "/lat/" + latitude + "/data.json"
+    
     def date_str_format(string):
       dateStr = string.replace('T',' ').replace('Z','').replace('"','')
       return dateStr
+    
     try:
       r = get(SMHI_FORECAST)
     except (ConnectionError, NewConnectionError, gaierror, MaxRetryError):
@@ -110,9 +112,9 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
       approved_timestamp = date_str_format(json.dumps(jobj["approvedTime"]))
       coordinates = tuple(jobj["geometry"]["coordinates"][0])
       forecasts = jobj["timeSeries"]
+      data_list = []
       for forecast in forecasts:
         time = date_str_format(json.dumps(forecast["validTime"]))
-        data_list = []
         for i in forecast["parameters"]:
           temp_dict ={ 
             "forecast_code" : i["name"],
@@ -130,27 +132,31 @@ def get_forecasts(longitude,latitude,hours_in_future = [24]):
     return result_dict
 
 def main():
-  load_dotenv()
-  # create produer
-  producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
-  # get forecast data
-  logger.debug(f"{datetime.now()} - Fetching forecasts...")
+
+
   msg = get_forecasts(longitude = '13.07',latitude = '55.6')
-  # encode forecast data to byte array
-  msg_byte = json.dumps(msg).encode('utf-8')
-  # send message to kafka topic
-  logger.debug(f"{datetime.now()} - Send forecasts to db-ingestion topic...")
-  producer.send('db-ingestion', msg_byte)
-  # get observation data
-  logger.debug(f"{datetime.now()} - Fetching observations...")
-  msg = get_observations(52350)
-  # encode observation data to byte array
-  msg_byte = json.dumps(msg).encode('utf-8')
-  # send message to kafka topic
-  logger.debug(f"{datetime.now()} - Send observations to db-ingestion topic...")
-  producer.send('db-ingestion', msg_byte)
-  # close producer
-  producer.close()
+  print(json.dumps(msg, indent=4))
+  # load_dotenv()
+  # # create produer
+  # producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
+  # # get forecast data
+  # logger.debug(f"{datetime.now()} - Fetching forecasts...")
+  # msg = get_forecasts(longitude = '13.07',latitude = '55.6')
+  # # encode forecast data to byte array
+  # msg_byte = json.dumps(msg).encode('utf-8')
+  # # send message to kafka topic
+  # logger.debug(f"{datetime.now()} - Send forecasts to db-ingestion topic...")
+  # producer.send('db-ingestion', msg_byte)
+  # # get observation data
+  # logger.debug(f"{datetime.now()} - Fetching observations...")
+  # msg = get_observations(52350)
+  # # encode observation data to byte array
+  # msg_byte = json.dumps(msg).encode('utf-8')
+  # # send message to kafka topic
+  # logger.debug(f"{datetime.now()} - Send observations to db-ingestion topic...")
+  # producer.send('db-ingestion', msg_byte)
+  # # close producer
+  # producer.close()
 
 if __name__ == "__main__":
     main()
