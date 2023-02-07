@@ -39,6 +39,9 @@ dbt_proj:
 
   target: dev
 ´´´
+dbt run --full-refresh
+
+
 ## Temperature sensor
 
   pip install kafka-python

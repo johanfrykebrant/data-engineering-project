@@ -136,27 +136,27 @@ def main():
 
   msg = get_forecasts(longitude = '13.07',latitude = '55.6')
   print(json.dumps(msg, indent=4))
-  # load_dotenv()
-  # # create produer
-  # producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
-  # # get forecast data
-  # logger.debug(f"{datetime.now()} - Fetching forecasts...")
-  # msg = get_forecasts(longitude = '13.07',latitude = '55.6')
-  # # encode forecast data to byte array
-  # msg_byte = json.dumps(msg).encode('utf-8')
-  # # send message to kafka topic
-  # logger.debug(f"{datetime.now()} - Send forecasts to db-ingestion topic...")
-  # producer.send('db-ingestion', msg_byte)
-  # # get observation data
-  # logger.debug(f"{datetime.now()} - Fetching observations...")
-  # msg = get_observations(52350)
-  # # encode observation data to byte array
-  # msg_byte = json.dumps(msg).encode('utf-8')
-  # # send message to kafka topic
-  # logger.debug(f"{datetime.now()} - Send observations to db-ingestion topic...")
-  # producer.send('db-ingestion', msg_byte)
-  # # close producer
-  # producer.close()
+  load_dotenv()
+  # create produer
+  producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
+  # get forecast data
+  logger.debug(f"{datetime.now()} - Fetching forecasts...")
+  msg = get_forecasts(longitude = '13.07',latitude = '55.6')
+  # encode forecast data to byte array
+  msg_byte = json.dumps(msg).encode('utf-8')
+  # send message to kafka topic
+  logger.debug(f"{datetime.now()} - Send forecasts to db-ingestion topic...")
+  producer.send('db-ingestion', msg_byte)
+  # get observation data
+  logger.debug(f"{datetime.now()} - Fetching observations...")
+  msg = get_observations(52350)
+  # encode observation data to byte array
+  msg_byte = json.dumps(msg).encode('utf-8')
+  # send message to kafka topic
+  logger.debug(f"{datetime.now()} - Send observations to db-ingestion topic...")
+  producer.send('db-ingestion', msg_byte)
+  # close producer
+  producer.close()
 
 if __name__ == "__main__":
     main()
