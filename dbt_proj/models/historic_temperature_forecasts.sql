@@ -17,7 +17,6 @@ FROM staging.forecasts
 	ON forecast_code = code
 
 
-
 {% if is_incremental() %}
 WHERE created_timestamp_utc > (SELECT MAX(created_timestamp_utc) FROM {{ this }})
 {% endif %}
