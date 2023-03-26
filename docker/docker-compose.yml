@@ -54,5 +54,11 @@ services:
       - "zookeeper"
     restart: 'no'
 
+  selenium:
+    image: selenium/standalone-chrome
+    ports:
+      - "${SELENIUM_PORT}:4444"
+    restart: unless-stopped      
+
 volumes:
   postgres-db-volume: 
