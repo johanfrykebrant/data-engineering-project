@@ -5,23 +5,21 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 import logging 
+from sys import stdout
 
-logging.basicConfig(filename="std.log", 
-                    format='%(asctime)s | %(message)s', 
+# Get environment variables from .env-file
+load_dotenv()
+
+# Config logger
+logging.basicConfig(filename="consumer.log", 
+                    format='%(asctime)s | %(levelname)s | %(message)s', 
                     filemode='w') 
 logger=logging.getLogger() 
 logger.setLevel(logging.DEBUG)
+consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
+logger.addHandler(consoleHandler)
 
-def write_to_db(data):
-    # connect to db
-    conn = psycopg2.connect(dbname=os.getenv('DATABASE'),
-                            user=os.getenv('DBUSER'),
-                            password=os.getenv('PASSWORD'),
-                            host=os.getenv('POSTGRES_IP'),
-                            port=os.getenv('POSTGRES_PORT'))
-
-    cur = conn.cursor()
-    
+def build_querry_string(data):
     schema = data['destination_schema']
     table = data['destination_table']
 
@@ -30,52 +28,77 @@ def write_to_db(data):
     vals_str_list = ["%s"] * len(cols)
     vals_str = ", ".join(vals_str_list)
 
-    vals_list = []
+    values_list = []
     for data_row in data_set:
-        vals_list.append(tuple(data_row.values()))
-    # create sql querry string
+        values_list.append(tuple(data_row.values()))
+
     querry_str = "INSERT INTO {scehma}.{table} {cols} VALUES ({vals_str})".format(
                 cols = cols, vals_str = vals_str,scehma = schema, table = table).replace("'","") 
     
-    # execute querry
-    cur.executemany(querry_str, vals_list)
+    return querry_str,values_list
 
-    # commit the changes to the database
-    conn.commit()
-    # close communication with the database
-    cur.close()
+def write_to_db(conn,data):
+    try:
+        cur = conn.cursor()
+        querry_str, values_list = build_querry_string(data)
+        cur.executemany(querry_str, values_list)
+        logger.info(f">> Inserting {len(values_list)} rows to {data['destination_schema']}.{data['destination_table']}")
+    except Exception as e:
+        logger.error(f">> Failed to write to to database due to error - {e}")
+    finally:
+        conn.commit()
+        cur.close()
+
+def connect_to_db():
+    logger.info(f">> Trying to connect to postgres://{os.getenv('DBUSER')}:{os.getenv('PASSWORD')}@{os.getenv('POSTGRES_IP')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('DATABASE')}")       
+    conn = None
+    try:
+        conn = psycopg2.connect(dbname=os.getenv('DATABASE'),
+                                user=os.getenv('DBUSER'),
+                                password=os.getenv('PASSWORD'),
+                                host=os.getenv('POSTGRES_IP'),
+                                port=os.getenv('POSTGRES_PORT'))
+        logger.info(f">> Successfully connected to postgres://{os.getenv('DBUSER')}:{os.getenv('PASSWORD')}@{os.getenv('POSTGRES_IP')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('DATABASE')}")       
+    except Exception as e:
+        logger.error(f">> Failed to connect to database due to error - {e}")
+    return conn
+
+def create_consumer(topic):
+    logger.info(f">> Creating consumer, bootstrapserver = {os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}, topic = {topic}")
+    consumer = KafkaConsumer(topic,
+                            bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}",
+                            auto_offset_reset='latest',
+                            )
+    return consumer
 
 def main():
-    load_dotenv()
-    # test db connection
-    logger.debug(f"{datetime.now()} - Testing database connection")
-    conn = psycopg2.connect(dbname=os.getenv('DATABASE'),
-                            user=os.getenv('DBUSER'),
-                            password=os.getenv('PASSWORD'),
-                            host=os.getenv('POSTGRES_IP'),
-                            port=os.getenv('POSTGRES_PORT'))
-
-    cur = conn.cursor()
-    cur.close()
-    topic = 'db-ingestion'
-    logger.debug(f"{datetime.now()} - Subscribing to topic {topic} at {os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
     
-    # subscribe to kafka topic
-    consumer = KafkaConsumer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}",
-                                auto_offset_reset='latest',
-                                consumer_timeout_ms=1000)
-    consumer.subscribe([topic])
-
-    while True:
+    logger.info(f">> Testing databse connection")
+    try:
+        conn = connect_to_db()
+        conn.close()
+        logger.info(f">> Succesfully connected to database.")
+    except:
+        logger.error(f">> Could not connect ot databse.")
+    
+    topic = 'db-ingestion'
+    consumer = create_consumer(topic)
+    
+    try:
         for message in consumer:
-            logger.debug(f"{datetime.now()} - Consuming message.")
-            # decode bytearray to string and load string as json-obj.
+            logger.info(f">> Consuming message from topic {message.topic}, partition {message.partition}, with offset {message.offset}")
+            # Decode bytearray to string and load string as json-obj.
             jobj = json.loads((message.value).decode("utf-8"))
-            # write the 
-            logger.debug(f"{datetime.now()} - Writing to database.")
-            write_to_db(jobj)
-    logger.debug(f"{datetime.now()} - Closing database connection")
-    consumer.close()
+            # Write the message to db
+            conn = connect_to_db()
+            write_to_db(conn,jobj)
+            conn.close()
+    except Exception as e:
+        logger.error(f">> Failed to consume message from topic {topic} to database due to error - {e}")
+    finally:
+        logger.info(f">>  Shutting down consumer.")
+        consumer.close()
+ 
 
 if __name__ == "__main__":
     main()
