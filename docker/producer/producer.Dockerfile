@@ -9,7 +9,9 @@ COPY producer/requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt
 
 # Copy necessary files
-COPY producer/smhi-producer.py root/app.py
+COPY producer/nordpool_webscraper.py root/nordpool_webscraper.py
+COPY producer/smhi_api.py root/smhi_api.py
+COPY producer/producer.py root/app.py
 COPY .env ./.env
 
 # copy crontabs for root user

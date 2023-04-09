@@ -1,23 +1,11 @@
-from kafka import KafkaProducer
 from socket import gaierror
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from requests import get, ConnectionError
 import json
 from datetime import datetime
-import os
-from dotenv import load_dotenv
 import logging 
-from sys import stdout
 
-load_dotenv()
-
-logging.basicConfig(filename="producer.log", 
-                    format='%(asctime)s | %(levelname)s | %(message)s', 
-                    filemode='w') 
-logger=logging.getLogger() 
-logger.setLevel(logging.DEBUG)
-consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
-logger.addHandler(consoleHandler)
+logger = logging.getLogger(__name__)
 
 NAME_CODES ={
     'msl': 'Air pressure',
@@ -137,38 +125,13 @@ def get_forecasts(longitude,latitude):
       return None
     return result_dict
 
-def on_send_success(record_metadata):
-    logger.info(f">> Succesfully produced message to topic {record_metadata.topic}, partition {record_metadata.partition}, with offset {record_metadata.offset}")
-
-def on_send_error(excp):
-    logger.error('>> Error when producing message.', exc_info=excp)
-
 def main():
-  topic = 'db-ingestion'
-
-  logger.info(f">> Starting producer.")
-  producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}"
-                          ,retries=5
-                          ,linger_ms=10)
-
   msg = get_forecasts(longitude = '13.07',latitude = '55.6')
-  # encode forecast data to byte array
-  msg_byte = json.dumps(msg).encode('utf-8')
-
-  logger.info(f">> Sending forecasts to {topic} topic.")
-  producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
-
+  print(json.dumps(msg, indent=4))
+  
   station_number = 52350
   msg = get_observations(station_number)
-  # encode observation data to byte array
-  msg_byte = json.dumps(msg).encode('utf-8')
+  print(json.dumps(msg, indent=4))
 
-  logger.info(f">> Sending observations to {topic} topic.")
-  producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
-  
-  producer.flush()
-  logger.info(f">> Closing producer.")
-  producer.close()
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

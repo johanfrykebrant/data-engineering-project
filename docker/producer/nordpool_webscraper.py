@@ -1,34 +1,45 @@
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import Select
 import time
 import json
 import os
+import logging
+from sys import stdout
 from dotenv import load_dotenv
 from kafka import KafkaProducer
+
+load_dotenv()
+
+logging.basicConfig(filename="producer.log", 
+                    format='%(asctime)s | %(levelname)s | %(message)s', 
+                    filemode='w') 
+logger=logging.getLogger() 
+logger.setLevel(logging.DEBUG)
+consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
+logger.addHandler(consoleHandler)
 
 NORDPOOL_URL = "https://www.nordpoolgroup.com/en/Market-data1/Dayahead/Area-Prices/SE/Hourly/?view=table"
 
 def setup_webdriver():
-    options = webdriver.ChromeOptions()
-    options.headless = True
-    options.add_argument("window-size=1920x1080")
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-gpu')
-    # ta bort dessa
-    options.add_argument('--ignore-ssl-errors=yes')
-    options.add_argument('--ignore-certificate-errors')
-    # options.add_argument('--disable-dev-shm-usage') # Not used 
-    
-    driver = webdriver.Remote(command_executor=f"http://:{os.getenv('SELENIUM_IP')}:{os.getenv('SELENIUM_PORT')}/wd/hub",
-                            options=options
-                            )
+    driver = None
+    try:
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        options.add_argument("window-size=1920x1080")
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-gpu')
+
+        driver = webdriver.Remote(command_executor=f"http://{os.getenv('SELENIUM_IP')}:{os.getenv('SELENIUM_PORT')}/wd/hub",
+                                options=options
+                                )
+    except Exception as e:
+        logger.error(f">> Failed to create webdriver due to error - {e}")
     return driver
 
-
-def get_energy_prices():
-   
-    driver = setup_webdriver()
+def get_energy_prices(driver):
+    if driver is None:
+        raise ValueError('Driver is None. Please pass a valid webdriver object.')
+    
     driver.get(NORDPOOL_URL)
 
     result_dict = {
@@ -119,26 +130,16 @@ def get_energy_prices():
 
         result_dict['data'] = data_list
     except Exception as e:
-        print(e)
+        logger.error(f">> Failed to scrape data from url {NORDPOOL_URL} due to error - {e}")
     finally:
         driver.quit()
 
     return result_dict
 
 def main():
-  load_dotenv()
-  # create produer
-  producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
-  # get forecast data
-  print('fetching energy prices...')
-  msg = get_energy_prices()
-  
-  #print(json.dumps(msg, indent=4))
-  # encode forecast data to byte array
-  msg_byte = json.dumps(msg).encode('utf-8')
-  # send message to kafka topic
-  print('sending message to kafka topic...')
-  producer.send('db-ingestion', msg_byte)
+    driver = setup_webdriver()
+    msg = get_energy_prices(driver)
+    print(json.dumps(msg, indent=4))
 
 if __name__ == '__main__':
     main()
