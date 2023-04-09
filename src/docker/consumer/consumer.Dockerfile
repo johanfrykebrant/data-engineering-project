@@ -4,9 +4,9 @@ RUN apt-get update \
     && apt-get -y install libpq-dev gcc \
     && pip install psycopg2
 
-COPY consumer/requirements.txt ./requirements.txt
-COPY consumer/consumer.py ./app.py
-COPY .env ./.env
+COPY src/docker/consumer/requirements.txt ./requirements.txt
+COPY src/docker/consumer/consumer.py ./app.py
+COPY build/.env ./.env
 
 RUN pip install -r requirements.txt
 
