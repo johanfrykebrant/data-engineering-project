@@ -4,13 +4,27 @@
 
 # Prerequisites
 
-dbt-postgres
-dbt-core
 docker
-docker compuse
+docker compose
 
 # Set up
 
+# .env file
+.env-file in the build directory
+
+´´´
+DBUSER = 'xxxxxxx'
+DATABASE = 'xxxxxxx'
+PASSWORD = 'xxxxxxx'
+POSTGRES_IP = 'xxxxxxx'
+KAFKA_IP = 'xxxxxxx'
+SELENIUM_IP = 'xxxxxxx'
+KAFKA_PORT = 'xxxxxxx'
+ZOOKEEPER_PORT = 'xxxxxxx'
+POSTGRES_PORT = 'xxxxxxx'
+SELENIUM_PORT = 'xxxxxxx'
+
+´´´
 ## Docker
 
 ## DBT

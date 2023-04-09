@@ -1,5 +1,7 @@
 version: '2'
 
+#env_file: ../.env
+
 services:
 
   zookeeper:
@@ -31,13 +33,13 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../src/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
   
   consumer:
     build: 
-      context: ./
-      dockerfile: consumer/consumer.Dockerfile
+      context: ../
+      dockerfile: src/docker/consumer/consumer.Dockerfile
     depends_on:
       - "kafka"
       - "zookeeper"
@@ -46,8 +48,8 @@ services:
     
   producer:
     build: 
-      context: ./
-      dockerfile: producer/producer.Dockerfile
+      context: ../
+      dockerfile: src/docker/producer/producer.Dockerfile
     depends_on:
       - "kafka"
       - "zookeeper"
