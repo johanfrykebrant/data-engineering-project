@@ -58,9 +58,14 @@ dbt run --full-refresh
 
 ## Temperature sensor
 
-  pip install kafka-python
-  pip install python-dotenv
+  ´´´pip install kafka-python´´´
+  ´´´pip install python-dotenv´´´
 
   transfer files setup cron
-  scp -r temperature-sensor pi@pi-node:/home/pi/temperature-sensor
+  ´´´scp -r temperature-sensor pi@pi-node:/home/pi/temperature-sensor´´´
+
+
+  ´´´crontab -e´´´
+  ´´´0 * * * * python data-engineering-project/src/temperature-sensor/temp-sens-producer.py´´´
+
   
