@@ -80,8 +80,8 @@ def on_send_error(excp):
 def main():
     load_dotenv()
     # create kafka produer
-    logger.debug(f"{datetime.now()} - Creating producer")
     kafka_server = f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}"
+    logger.debug(f"{datetime.now()} - Creating producer. bootstrap_server = {kafka_server}")
     producer = KafkaProducer(bootstrap_servers=kafka_server)
     # get temperature reading
     logger.debug(f"{datetime.now()} - Reading from temperature sensor...")
@@ -92,6 +92,8 @@ def main():
     logger.debug(f"{datetime.now()} - Send temperature measurements to db-ingestion topic...")
     print(json.dumps(msg, indent=4))
     producer.send('db-ingestion', msg_byte).add_callback(on_send_success).add_errback(on_send_error)
+    
+    producer.flush()
     logger.debug(f"{datetime.now()} - Closing producer")
     # close producer
     producer.close()    
