@@ -81,7 +81,8 @@ def main():
     load_dotenv()
     # create kafka produer
     logger.debug(f"{datetime.now()} - Creating producer")
-    producer = KafkaProducer(bootstrap_servers=f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}")
+    kafka_server = f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}"
+    producer = KafkaProducer(bootstrap_servers=kafka_server)
     # get temperature reading
     logger.debug(f"{datetime.now()} - Reading from temperature sensor...")
     msg = read_temp()
