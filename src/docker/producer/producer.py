@@ -52,16 +52,16 @@ def main():
   logger.info(f">> Sending observations to {topic} topic.")
   producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
 
-  try:
-    driver = setup_webdriver()
-    msg = get_energy_prices(driver)
-    msg_byte = json.dumps(msg).encode('utf-8')
-    logger.info(f">> Successfully fetched energy spot prices data.")
-  except Exception as e:
-    logger.error(f">> Could not fetch energy spot prices data due to error - {e}")
+  # try:
+  #   driver = setup_webdriver()
+  #   msg = get_energy_prices(driver)
+  #   msg_byte = json.dumps(msg).encode('utf-8')
+  #   logger.info(f">> Successfully fetched energy spot prices data.")
+  # except Exception as e:
+  #   logger.error(f">> Could not fetch energy spot prices data due to error - {e}")
   
-  logger.info(f">> Sending energy prices to {topic} topic.")
-  producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
+  # logger.info(f">> Sending energy prices to {topic} topic.")
+  # producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
 
   producer.flush()
   logger.info(f">> Closing producer.")

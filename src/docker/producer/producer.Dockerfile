@@ -16,6 +16,6 @@ COPY build/.env ./.env
 
 # copy crontabs for root user
 COPY src/docker/producer/cronjobs /etc/crontabs/root
-#CMD ["crond","-f", "-d", "1", "-L", "/dev/stdout"]
+CMD ["crond","-f", "-d", "1", "-L", "/dev/stdout"]
 # Use this when debuging
-CMD ["python3", "root/app.py"]
+#CMD ["python3", "root/app.py"]
