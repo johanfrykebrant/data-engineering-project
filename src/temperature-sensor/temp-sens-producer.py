@@ -71,6 +71,12 @@ def read_temp():
        
     return result_dict
 
+def on_send_success(record_metadata):
+    logger.info(f"Succesfully produced message to topic {record_metadata.topic}, partition {record_metadata.partition}, with offset {record_metadata.offset}")
+
+def on_send_error(excp):
+    logger.error('Error when producing message.', exc_info=excp)
+
 def main():
     load_dotenv()
     # create kafka produer
@@ -84,7 +90,7 @@ def main():
     # send message to kafka topic
     logger.debug(f"{datetime.now()} - Send temperature measurements to db-ingestion topic...")
     print(json.dumps(msg, indent=4))
-    producer.send('db-ingestion', msg_byte)
+    producer.send('db-ingestion', msg_byte).add_callback(on_send_success).add_errback(on_send_error)
     logger.debug(f"{datetime.now()} - Closing producer")
     # close producer
     producer.close()    
