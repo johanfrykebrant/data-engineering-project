@@ -1,7 +1,5 @@
 version: '2'
 
-#env_file: ../.env
-
 services:
 
   zookeeper:
@@ -16,6 +14,7 @@ services:
       - "${KAFKA_PORT}:9092"
     environment:
       DOCKER_API_VERSION: 1.22
+      KAFKA_HEAP_OPTS: "-Xmx400M -Xms400M"
       KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_IP}
       KAFKA_CREATE_TOPICS: "db-ingestion:1:1"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
