@@ -52,13 +52,7 @@ services:
     depends_on:
       - "kafka"
       - "zookeeper"
-    restart: 'no'
-
-  selenium:
-    image: selenium/standalone-chrome
-    ports:
-      - "${SELENIUM_PORT}:4444"
-    restart: unless-stopped      
+    restart: unless-stopped    
 
 volumes:
   postgres-db-volume: 
