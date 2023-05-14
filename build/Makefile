@@ -10,12 +10,12 @@ up:
 	docker compose up producer -d
 
 get_logs:
-	docker-compose logs -t --no-log-prefix consumer > ../logs/consumer.log
-	docker-compose logs -t --no-log-prefix producer > ../logs/producer.log
-	docker-compose logs -t --no-log-prefix kafka > ../logs/kafka.log
-	docker-compose logs -t --no-log-prefix zookeeper > ../logs/zookeeper.log
-	docker-compose logs -t --no-log-prefix postgres > ../logs/postgres.log
-	docker-compose logs -t --no-log-prefix selenium > ../logs/selenium.log 
+	docker compose logs -t --no-log-prefix consumer > ../logs/consumer.log
+	docker compose logs -t --no-log-prefix producer > ../logs/producer.log
+	docker compose logs -t --no-log-prefix kafka > ../logs/kafka.log
+	docker compose logs -t --no-log-prefix zookeeper > ../logs/zookeeper.log
+	docker compose logs -t --no-log-prefix postgres > ../logs/postgres.log
+	docker compose logs -t --no-log-prefix selenium > ../logs/selenium.log 
 
 down:	
 	docker compose down
