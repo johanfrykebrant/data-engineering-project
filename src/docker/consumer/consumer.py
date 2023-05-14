@@ -14,7 +14,7 @@ logging.basicConfig(filename="consumer.log",
                     format='%(asctime)s | %(levelname)s | %(message)s', 
                     filemode='w') 
 logger=logging.getLogger() 
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
 logger.addHandler(consoleHandler)
 
