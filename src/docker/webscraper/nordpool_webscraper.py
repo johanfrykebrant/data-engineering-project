@@ -15,7 +15,7 @@ import re
 
 load_dotenv()
 
-logging.basicConfig(filename="producer.log", 
+logging.basicConfig(filename="webscraper.log", 
                     format='%(asctime)s | %(levelname)s | %(message)s', 
                     filemode='w') 
 logger=logging.getLogger() 
