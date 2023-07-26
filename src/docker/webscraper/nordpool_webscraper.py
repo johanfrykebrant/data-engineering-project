@@ -1,6 +1,6 @@
-from decimal import Decimal
 from datetime import datetime
-import simplejson as json
+import time
+import json
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -21,36 +21,32 @@ logging.basicConfig(filename="producer.log",
                     format='%(asctime)s | %(levelname)s | %(message)s', 
                     filemode='w') 
 logger=logging.getLogger() 
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
 consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
 logger.addHandler(consoleHandler)
 
 NORDPOOL_URL = "https://www.nordpoolgroup.com/en/Market-data1/Dayahead/Area-Prices/SE/Hourly/?view=table"
 
 def setup_webdriver():
-    driver = None
-    try:
-        # Set the path to the chromedriver executable
-        #chromedriver_path = "/usr/lib/chromium/chromedriver"
+    # Set the path to the chromedriver executable
+    chromedriver_path = "/usr/lib/chromium/chromedriver"
 
-        # Set the options for the Chrome webdriver
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--headless")  # Run Chrome in headless mode (without GUI)
-        chrome_options.add_argument("--no-sandbox")  # Bypass OS security restrictions
-        chrome_options.add_argument("--disable-dev-shm-usage")  # Disable /dev/shm usage
+    # Set the options for the Chrome webdriver
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--headless")  # Run Chrome in headless mode (without GUI)
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security restrictions
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Disable /dev/shm usage
 
-        # Set the path to the Chrome binary (in Alpine, it's located at /usr/bin/chromium-browser)
-        #chrome_options.binary_location = "/usr/bin/chromium-browser"
+    # Set the path to the Chrome binary (in Alpine, it's located at /usr/bin/chromium-browser)
+    chrome_options.binary_location = "/usr/bin/chromium-browser"
 
-        # Create a new instance of the Chrome webdriver
-        #driver = webdriver.Chrome(service=Service(chromedriver_path), options=chrome_options)
-        driver = webdriver.Chrome(service=Service(), options=chrome_options)
-    except Exception as e:
-        logger.error(f">> Failed to create webdriver due to error - {e}")
+    # Create a new instance of the Chrome webdriver
+    driver = webdriver.Chrome(service=Service(chromedriver_path), options=chrome_options)
+    #driver = webdriver.Chrome(service=Service(), options=chrome_options)
     return driver
 
 def extract_data_row(row):
-    values = row.text.split(" ")
+    values = row.split(" ")
     pattern = re.compile(r'\d{2}')
     if pattern.fullmatch(values[0]):
         return values[0], values[3:]
@@ -86,29 +82,23 @@ def get_energy_prices(driver):
         # Change currency from EUR to SEK
         Select(dropdown).select_by_visible_text("SEK")
 
-        # data_table = driver.find_element(By.ID, "datatable")
-        # tr_items = data_table.find_elements(By.TAG_NAME,'tr')
-
+        # Wait to avoid StaleElementReferenceException
+        time.sleep(1)
         data_table = WebDriverWait(driver, 3).until(
            EC.visibility_of_element_located((By.ID, "datatable"))
         )
-        tr_items = WebDriverWait(data_table, 5).until(
-            EC.visibility_of_all_elements_located((By.CSS_SELECTOR, ":scope > tr"))
-        )
-        
-        # extract the table header
-        table_header = tr_items[0].text.split("\n")
 
-        # extract date and column names
-        date = format_date(table_header[0])
+        table_rows = data_table.text.split("\n")
+
+        # Extract date and column names
+        date = format_date(table_rows[0])
 
         data_list = []
         
-        # collecting timestamps and values in lists
-        for row in tr_items[1:]:
+        for row in table_rows[2:]:
 
-            # break loop if first value is not timestamp
             hour, values = extract_data_row(row)
+            # Break loop if hour is None
             if hour:
                 for i, zone in enumerate(['se1', 'se2', 'se3', 'se4']):
                     temp_dict = {
@@ -122,8 +112,6 @@ def get_energy_prices(driver):
                 break
 
         result_dict['data'] = data_list
-    except Exception as e:
-        logger.error(f">> Failed to scrape data from url {NORDPOOL_URL} due to error - {e}")
     finally:
         driver.quit()
 
