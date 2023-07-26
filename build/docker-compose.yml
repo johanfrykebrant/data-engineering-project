@@ -52,7 +52,13 @@ services:
     depends_on:
       - "kafka"
       - "zookeeper"
-    restart: unless-stopped    
+    restart: unless-stopped
+
+  webscraper:
+    build: 
+      context: ../
+      dockerfile: src/docker/webscraper/webscraper.Dockerfile
+    restart: unless-stopped 
 
 volumes:
   postgres-db-volume: 

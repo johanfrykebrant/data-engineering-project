@@ -14,7 +14,7 @@ get_logs:
 	docker compose logs -t --no-log-prefix kafka > ../logs/kafka.log
 	docker compose logs -t --no-log-prefix zookeeper > ../logs/zookeeper.log
 	docker compose logs -t --no-log-prefix postgres > ../logs/postgres.log
-
+	docker compose logs -t --no-log-prefix webscraper > ../logs/webscraper.log
 down:	
 	docker compose down
 
