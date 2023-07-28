@@ -12,7 +12,7 @@ logging.basicConfig(filename="webscraper.log",
                     format='%(asctime)s | %(levelname)s | %(message)s', 
                     filemode='w') 
 logger=logging.getLogger() 
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
 consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
 logger.addHandler(consoleHandler)
 

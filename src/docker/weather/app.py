@@ -5,11 +5,10 @@ from dotenv import load_dotenv
 import logging 
 from sys import stdout
 from smhi_api import *
-from nordpool_webscraper import *
 
 load_dotenv()
 
-logging.basicConfig(filename="producer.log", 
+logging.basicConfig(filename="weather.log", 
                     format='%(asctime)s | %(levelname)s | %(message)s', 
                     filemode='w') 
 logger=logging.getLogger() 
@@ -42,7 +41,7 @@ def main():
   producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
 
   try:
-    station_number = 52350
+    station_number = 52240
     msg = get_observations(station_number)
     msg_byte = json.dumps(msg).encode('utf-8')
     logger.info(f">> Successfully fetched weather observations data.")
@@ -51,17 +50,6 @@ def main():
   
   logger.info(f">> Sending observations to {topic} topic.")
   producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
-
-  # try:
-  #   driver = setup_webdriver()
-  #   msg = get_energy_prices(driver)
-  #   msg_byte = json.dumps(msg).encode('utf-8')
-  #   logger.info(f">> Successfully fetched energy spot prices data.")
-  # except Exception as e:
-  #   logger.error(f">> Could not fetch energy spot prices data due to error - {e}")
-  
-  # logger.info(f">> Sending energy prices to {topic} topic.")
-  # producer.send(topic, msg_byte).add_callback(on_send_success).add_errback(on_send_error)
 
   producer.flush()
   logger.info(f">> Closing producer.")

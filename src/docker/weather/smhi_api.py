@@ -37,7 +37,9 @@ def get_observations(station_number):
     """
     SMHI_OBSERVATION = "https://opendata-download-metobs.smhi.se/api/version/latest/parameter/<parameter>/station/"+ str(station_number) + "/period/latest-hour/data.json"
     result_dict = []
-    parameters = [1,3,4,6,7,21,25]
+    # Available parameters: https://opendata.smhi.se/apidocs/metobs/parameter.html
+    # Not all station can provide observations for all parameter types
+    parameters = [1,3,4,7,21]
     result_dict = {
                 'destination_schema': 'staging',
                 'destination_table': 'observations',
@@ -53,12 +55,15 @@ def get_observations(station_number):
         url = SMHI_OBSERVATION.replace("<parameter>",str(param))
         try:
             r = get(url)
+            if r.status_code == 404:
+              raise RuntimeError(f"{r.request.method} {r.url} returned <Response{r.status_code}>")
         except (ConnectionError, NewConnectionError, gaierror, MaxRetryError):
             logger.critical("Failed GET request. Could not establish connection. Ensure that device has internet acecss")
             return None
+        finally:
+           print(f">> {r.request.method} request from {r.url} returned <Response{r.status_code}>") 
         
         jobj = r.json()
-        logger.info(f">> {r.request.method} request from {r.url} returned <Response{r.status_code}>") 
         values = jobj["value"]
         
         if r.status_code == 200:
@@ -89,9 +94,13 @@ def get_forecasts(longitude,latitude):
     
     try:
       r = get(SMHI_FORECAST)
+      if r.status_code == '<Response404>':
+         raise RuntimeError(f">> {r.request.method} {r.url} returned <Response{r.status_code}>")
     except (ConnectionError, NewConnectionError, gaierror, MaxRetryError):
       logger.critical(">> Failed GET request. Could not establish connection. Ensure that device has internet acecss")
       return None
+    finally:
+      logger.debug(f">> {r.request.method} {r.url} returned <Response{r.status_code}>")
 
     result_dict = {
                     'destination_schema': 'staging',
@@ -129,7 +138,7 @@ def main():
   msg = get_forecasts(longitude = '13.07',latitude = '55.6')
   print(json.dumps(msg, indent=4))
   
-  station_number = 52350
+  station_number = 52240
   msg = get_observations(station_number)
   print(json.dumps(msg, indent=4))
 
