@@ -45,10 +45,10 @@ services:
       - "postgres"
     restart: unless-stopped
     
-  producer:
+  weather:
     build: 
       context: ../
-      dockerfile: src/docker/producer/producer.Dockerfile
+      dockerfile: src/docker/weather/weather.Dockerfile
     depends_on:
       - "kafka"
       - "zookeeper"
