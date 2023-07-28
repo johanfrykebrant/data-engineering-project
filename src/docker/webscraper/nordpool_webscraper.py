@@ -8,20 +8,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 import logging
-from sys import stdout
-from dotenv import load_dotenv
 import re
-#from kafka import KafkaProducer
 
-load_dotenv()
-
-logging.basicConfig(filename="webscraper.log", 
-                    format='%(asctime)s | %(levelname)s | %(message)s', 
-                    filemode='w') 
-logger=logging.getLogger() 
-logger.setLevel(logging.WARNING)
-consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
-logger.addHandler(consoleHandler)
+logger = logging.getLogger(__name__)
 
 NORDPOOL_URL = "https://www.nordpoolgroup.com/en/Market-data1/Dayahead/Area-Prices/SE/Hourly/?view=table"
 
@@ -40,7 +29,6 @@ def setup_webdriver():
 
     # Create a new instance of the Chrome webdriver
     driver = webdriver.Chrome(service=Service(chromedriver_path), options=chrome_options)
-    #driver = webdriver.Chrome(service=Service(), options=chrome_options)
     return driver
 
 def extract_data_row(row):

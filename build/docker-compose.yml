@@ -58,6 +58,9 @@ services:
     build: 
       context: ../
       dockerfile: src/docker/webscraper/webscraper.Dockerfile
+    depends_on:
+      - "kafka"
+      - "zookeeper"
     restart: unless-stopped 
 
 volumes:
