@@ -61,7 +61,15 @@ services:
     depends_on:
       - "kafka"
       - "zookeeper"
-    restart: unless-stopped 
+    restart: unless-stopped
+  
+  grafana:
+    build:
+      context: ../
+      dockerfile: src/docker/grafana/grafana.Dockerfile
+    ports:
+      - '${GRAFANA_PORT}:3000'
+    restart: unless-stopped
 
 volumes:
-  postgres-db-volume: 
+  postgres-db-volume:

@@ -1,0 +1,20 @@
+apiVersion: 1
+
+datasources:
+  - name: Postgres
+    type: postgres
+    url: 192.168.1.57:5432
+    uid: mytestdb
+    access: proxy
+    orgId: 1
+    version: 1
+    editable: true
+    database: warehouse
+    user: user
+    secureJsonData:
+      password: "password123"
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1200
+    options:
+      foldersFromFilesStructure: true
