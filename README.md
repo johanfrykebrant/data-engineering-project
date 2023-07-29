@@ -20,7 +20,7 @@ This is a simple data engineering project in order to learn more about kafka, do
 
 # Set up
 
-# .env file
+## .env file
 Create a file called ```.env``` in the build directory.
 
 ```env
