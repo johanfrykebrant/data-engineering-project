@@ -44,7 +44,7 @@ https://docs.docker.com/engine/
 
 The docker images does not need to run on the same machine except for the ```zookeper``` and ```kafka``` images. If a more complex and distrubuted set up is desired, the ```docker-compose.yml``` will need to be changed accordingly.  
 
-When starting up the images for the first time, build and start them one by one to make sure everything runs smoothly. If you want to go crazy en build and run everything in one go on the same machine, use the ```build``` and ```up``` commands defined in the ```Makefile```. Since some of the images are depending on other images, I recomend to start them in the following order:
+When starting up the images for the first time, build and start them one by one to make sure everything runs smoothly. If you want to go crazy and build and run everything in one go on the same machine, use the ```build``` and ```up``` commands defined in the ```Makefile```. Since some of the images are depending on other images, I recomend to start them in the following order:
 
 1. ```zookeper```
 2. ```kafka```
