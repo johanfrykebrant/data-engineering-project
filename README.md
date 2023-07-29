@@ -7,6 +7,7 @@
 - docker
 - docker compose
 - a ds18b20 sensor
+- some sort of raspberry pi (I use nano)
 
 # Set up
 
@@ -19,7 +20,7 @@ DATABASE = 'xxxxxxx'
 PASSWORD = 'xxxxxxx'
 POSTGRES_IP = 'xxxxxxx'
 KAFKA_IP = 'xxxxxxx'
-SELENIUM_IP = 'xxxxxxx'
+GRAFANA_IP = 'xxxxxxx'
 KAFKA_PORT = 'xxxxxxx'
 ZOOKEEPER_PORT = 'xxxxxxx'
 POSTGRES_PORT = 'xxxxxxx'
@@ -28,37 +29,7 @@ SELENIUM_PORT = 'xxxxxxx'
 
 ## Docker
 
-## DBT
-postgres depend.
-sudo apt install postgresql libpq-dev postgresql-client
-postgresql-client-common -y
-pip install dbt-postgres
-
-add .dbt/profiles.yml to home dir.
-
-```bash
-dbt run --profiles-dir ./profiles.yml
-dbt debug --config-dir
-```
-
-```yaml
-dbt_proj:
-  outputs:
-    dev:
-      type: postgres
-      threads: 1
-      host: xxxxxxx
-      port: 5432
-      user: xxxxxxx
-      pass: xxxxxxx
-      dbname: xxxxxxx
-      schema: staging
-  target: dev
-```
-
-```bash
-dbt run --full-refresh
-```
+## Grafana
 
 ## Temperature sensor
 
