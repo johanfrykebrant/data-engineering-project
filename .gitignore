@@ -6,3 +6,5 @@
 **/.user.yml
 **/*log
 **/logs
+**/pwfile
+**/mosquitto.db

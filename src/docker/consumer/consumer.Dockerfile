@@ -5,7 +5,7 @@ RUN apt-get update \
     && pip install psycopg2
 
 COPY src/docker/consumer/requirements.txt ./requirements.txt
-COPY src/docker/consumer/consumer.py ./app.py
+COPY src/docker/consumer/mqttconsumer.py ./app.py
 COPY build/.env ./.env
 
 RUN pip install -r requirements.txt
