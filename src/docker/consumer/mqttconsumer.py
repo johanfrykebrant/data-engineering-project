@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import psycopg2
 from dotenv import load_dotenv
 import logging
-from sys import stdout
+import sys
 import os
 import json
 
@@ -11,11 +11,11 @@ logging.basicConfig(filename="consumer.log",
                     format='%(asctime)s | %(levelname)s | %(message)s', 
                     filemode='w') 
 logger=logging.getLogger() 
-logger.setLevel(logging.INFO)
-consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
+logger.setLevel(logging.DEBUG)
+consoleHandler = logging.StreamHandler(sys.stdout) #set streamhandler to stdout
 logger.addHandler(consoleHandler)
 
-TOPIC_NAME = "hello/topic"
+TOPIC_NAME = "db-ingestion"
 load_dotenv()
 
 # Initialize the database connection pool
@@ -64,19 +64,24 @@ def write_to_db(conn,data):
         cur.close()
 
 def on_connect(client, userdata, flags, rc):
+    logger.info(f">> Trying to connect to MQTT broker")
     if rc == 0:
-        logger.info(f">> Connected to MQTT broker")
+        logger.info(f">> Connected to MQTT broker on topic {TOPIC_NAME}")
         client.subscribe(TOPIC_NAME)
     else:
-        logger.error(f">> Connection to MQTT broker failed with code {rc}")
+        logger.error(f">> Connection to MQTT broker failed with code {rc}", exc_info=True)
+        sys.exit("Could not connect to MQTT broker") 
 
 def on_message(client, userdata, msg):
     logger.info(f">> Received message: {msg.payload} on topic: {msg.topic}")
-    conn = connect_to_database()
-    jobj = json.loads((msg.payload).decode("utf-8"))
-    print(jobj)
-    write_to_db(conn,jobj)
-    conn.close()
+    try:
+        conn = connect_to_database()
+        jobj = json.loads((msg.payload).decode("utf-8"))
+        write_to_db(conn,jobj)
+    except Exception as e:
+        logger.error(f">> Could not handle message correctly du to error - {e}", exc_info=True)
+    finally:
+        conn.close()
 
 def setup_client():
     client = mqtt.Client()
@@ -86,7 +91,7 @@ def setup_client():
     # Set your MQTT broker address, port, username, and password
     broker_address = os.getenv('MQTT_IP')
     broker_port = 1883
-
+    print(f"{os.getenv('MQTT_USER')}, {os.getenv('MQTT_PW')}")
     client.username_pw_set(os.getenv('MQTT_USER'), os.getenv('MQTT_PW'))
     client.connect(broker_address, broker_port, 60)
     return client

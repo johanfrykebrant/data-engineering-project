@@ -6,19 +6,26 @@ from datetime import datetime
 import logging 
 import json
 from dotenv import load_dotenv
-from kafka import KafkaProducer
+import paho.mqtt.client as mqtt
+import sys
+
+load_dotenv()
 
 logging.basicConfig(filename="std.log", 
                     format='%(asctime)s | %(message)s', 
                     filemode='w') 
 
 logger=logging.getLogger() 
-logger.setLevel(logging.DEBUG) 
+logger.setLevel(logging.INFO)
+consoleHandler = logging.StreamHandler(sys.stdout) #set streamhandler to stdout
+logger.addHandler(consoleHandler)
+
 
 os.system('sudo modprobe w1-gpio')
 os.system('sudo modprobe w1-therm')
 BASE_DIR = '/sys/bus/w1/devices/'
 SENSORS = glob.glob('/sys/bus/w1/devices/' + '28*')
+TOPIC_NAME = "db-ingestion"
 
 def find_sensors():      
     device_files = []
@@ -71,32 +78,37 @@ def read_temp():
        
     return result_dict
 
-def on_send_success(record_metadata):
-    logger.info(f"Succesfully produced message to topic {record_metadata.topic}, partition {record_metadata.partition}, with offset {record_metadata.offset}")
+def on_connect(client, userdata, flags, rc):
+    logger.info(f">> Trying to connect to MQTT broker")
+    if rc == 0:
+        logger.info(f">> Connected to MQTT broker on topic {TOPIC_NAME}")
+        client.subscribe(TOPIC_NAME)
+    else:
+        logger.error(f">> Connection to MQTT broker failed with code {rc}", exc_info=True)
+        sys.exit("Could not connect to MQTT broker") 
 
-def on_send_error(excp):
-    logger.error('Error when producing message.', exc_info=excp)
+def setup_client():
+    client = mqtt.Client()
+    client.on_connect = on_connect
+
+    # Set your MQTT broker address, port, username, and password
+    broker_address = os.getenv('MQTT_IP')
+    broker_port = 1883
+
+    client.username_pw_set(os.getenv('MQTT_USER'), os.getenv('MQTT_PW'))
+    client.connect(broker_address, broker_port, 60)
+    return client
 
 def main():
-    load_dotenv()
-    # create kafka produer
-    kafka_server = f"{os.getenv('KAFKA_IP')}:{os.getenv('KAFKA_PORT')}"
-    logger.debug(f"{datetime.now()} - Creating producer. bootstrap_server = {kafka_server}")
-    producer = KafkaProducer(bootstrap_servers=kafka_server)
+    client = setup_client()
+
     # get temperature reading
     logger.debug(f"{datetime.now()} - Reading from temperature sensor...")
     msg = read_temp()
-    # encode forecast data to byte array
-    msg_byte = json.dumps(msg).encode('utf-8')
+
     # send message to kafka topic
     logger.debug(f"{datetime.now()} - Send temperature measurements to db-ingestion topic...")
-    print(json.dumps(msg, indent=4))
-    producer.send('db-ingestion', msg_byte).add_callback(on_send_success).add_errback(on_send_error)
-    
-    producer.flush()
-    logger.debug(f"{datetime.now()} - Closing producer")
-    # close producer
-    producer.close()    
-    
+    client.publish(TOPIC_NAME,payload=json.dumps(msg))
+
 if __name__ == "__main__":
     main()

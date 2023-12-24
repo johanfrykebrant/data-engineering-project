@@ -18,47 +18,23 @@ DBUSER = 'xxxxxxx'
 DATABASE = 'xxxxxxx'
 PASSWORD = 'xxxxxxx'
 POSTGRES_IP = 'xxxxxxx'
-KAFKA_IP = 'xxxxxxx'
-SELENIUM_IP = 'xxxxxxx'
-KAFKA_PORT = 'xxxxxxx'
-ZOOKEEPER_PORT = 'xxxxxxx'
-POSTGRES_PORT = 'xxxxxxx'
-SELENIUM_PORT = 'xxxxxxx'
+MQTT_USER = 'xxxxxxx'
+MQTT_PW = 'xxxxxxx'
+MQTT_IP = 'xxxxxxx'
 ```
 
 ## Docker
 
-## DBT
-postgres depend.
-sudo apt install postgresql libpq-dev postgresql-client
-postgresql-client-common -y
-pip install dbt-postgres
+## MQTT
 
-add .dbt/profiles.yml to home dir.
+# login interactively into the mqtt container
+sudo docker exec -it <container-id> sh
 
-```bash
-dbt run --profiles-dir ./profiles.yml
-dbt debug --config-dir
-```
+# add user and it will prompt for password
+mosquitto_passwd -c /mosquitto/config/pwfile user1
 
-```yaml
-dbt_proj:
-  outputs:
-    dev:
-      type: postgres
-      threads: 1
-      host: xxxxxxx
-      port: 5432
-      user: xxxxxxx
-      pass: xxxxxxx
-      dbname: xxxxxxx
-      schema: staging
-  target: dev
-```
+sudo docker restart <container-id>
 
-```bash
-dbt run --full-refresh
-```
 
 ## Temperature sensor
 

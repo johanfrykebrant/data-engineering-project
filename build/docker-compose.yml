@@ -11,6 +11,7 @@ services:
       - ../src/docker/mqtt5/config:/mosquitto/config:rw
       - ../src/docker/mqtt5/data:/mosquitto/data:rw
       - ../src/docker/mqtt5/log:/mosquitto/log:rw
+    restart: unless-stopped 
   
   timescale:
     image: timescale/timescaledb:latest-pg16
