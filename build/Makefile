@@ -2,9 +2,6 @@ build:
 	docker compose build
 
 up:
-	docker compose up zookeeper -d
-	docker compose up postgres -d
-	docker compose up kafka -d
 	docker compose up consumer -d
 	docker compose up weather -d
 	docker compose up webscraper -d
